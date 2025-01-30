@@ -1,5 +1,5 @@
 ---
-typora-root-url: ../Img
+typora-root-url: ../.
 ---
 
 ## Meeting Information

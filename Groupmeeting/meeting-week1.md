@@ -25,15 +25,15 @@ typora-root-url: ../.
 
   - **UX Idea 1:** Cosmetic mirror opening and closing
 
-    <img src="/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.27.02.jpeg" alt="WhatsApp Image 2025-01-30 at 11.27.02" style="zoom:20%;" />
+    <img src="/Img/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.27.02.jpeg" alt="WhatsApp Image 2025-01-30 at 11.27.02" style="zoom:20%;" />
 
   - **UX Idea 2:** The side is attached to the LED light belt, through which the direction is indicated.
 
-    <img src="/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.28.22.jpeg" alt="WhatsApp Image 2025-01-30 at 11.28.22" style="zoom:20%;" />
+    <img src="/Img/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.28.22.jpeg" alt="WhatsApp Image 2025-01-30 at 11.28.22" style="zoom:20%;" />
     
   - **UX Idea 3:** On the basis of Idea2, the fixed pointer is changed to the luminous pointer
   
-    <img src="/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.27.58.jpeg" alt="WhatsApp Image 2025-01-30 at 11.27.58" style="zoom:20%;" />
+    <img src="/Img/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.27.58.jpeg" alt="WhatsApp Image 2025-01-30 at 11.27.58" style="zoom:25%;" />
 
 - **Decisions/Actions**:  UX Idea 3 was chose.
 
@@ -59,10 +59,8 @@ typora-root-url: ../.
   - **Linked Idea 2:** 
 
     Suppose there are two users, Jack and Rose, who are lovers in a long-distance relationship. Suppose Rose, at a certain point in time, feels sad because her job is not going well. So she switches on our compass, and after switching on the device, she rotates it at a particular angle relative to when the device was switched on and presses the ‘Stressed Out’ button, while Jack receives a vibration from the compass at the same time 📳. Jack, after switching on the device, rotates the angle at which Rose pressed the button, at which point the light band on the compass flashes and vibrates slightly, picking up Rose's mood message.
-
-  <img src="/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.37.17.jpeg" alt="WhatsApp Image 2025-01-30 at 11.37.17" style="zoom:25%;" />
-
-  
+    
+    <img src="/Img/Groupmeeting/week1/WhatsApp Image 2025-01-30 at 11.37.17.jpeg" alt="WhatsApp Image 2025-01-30 at 11.37.17" style="zoom:25%;" />
 
 - **Decisions/Actions**:  
 

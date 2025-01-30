@@ -22,7 +22,7 @@ typora-root-url: ../.
 ### 1. Topic 1: Appromix Gannt Chart (Task Allocation)
 - **Discussion**:  
 
-  ![GANTT-test](/Groupmeeting/week0/GANTT-test.jpeg)
+  ![GANTT-test](/Img/Groupmeeting/week0/GANTT-test.jpeg)
 
 - **Decisions/Actions**:  Need futher task allocation after the topic is decided
 

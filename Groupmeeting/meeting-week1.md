@@ -54,8 +54,7 @@ typora-root-url: ../.
     **Solutions:**
 
     1. Each time the device is switched on, the GPS is used to obtain location information (for about 10s), and is switched off as soon as the location information is obtained, unless the user performs a repositioning operation while using the device, in which case the GPS is switched on for a short period of time, obtains the information, and is switched off automatically.
-    2. There is no solution to the high price of GPS modules
-    3. The Second solution is to use a mobile app that retrieves location details from the personal smartphone of the user and send it to the device to be used in the calculations. This would remove the need for a built-in GPS. 
+    2. The Second solution is to use a mobile app that retrieves location details from the personal smartphone of the user and send it to the device to be used in the calculations. This would remove the need for a built-in GPS which automaticaly solves the problem of powering and cost of implementing a GPS module within the device.
 
   - **Linked Idea 2:** 
 

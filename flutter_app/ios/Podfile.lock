@@ -1,0 +1,35 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_blue_plus_darwin (0.0.2):
+    - Flutter
+    - FlutterMacOS
+  - geolocator_apple (1.2.0):
+    - Flutter
+  - permission_handler_apple (9.1.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - flutter_blue_plus_darwin (from `.symlinks/plugins/flutter_blue_plus_darwin/darwin`)
+  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  flutter_blue_plus_darwin:
+    :path: ".symlinks/plugins/flutter_blue_plus_darwin/darwin"
+  geolocator_apple:
+    :path: ".symlinks/plugins/geolocator_apple/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_blue_plus_darwin: 09444a26fb6bdef523e55b68fc1c59af5a877ea6
+  geolocator_apple: 1560c3c875af2a412242c7a923e15d0d401966ff
+  permission_handler_apple: 3787117e48f80715ff04a3830ca039283d6a4f29
+
+PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+
+COCOAPODS: 1.16.2

@@ -7,47 +7,43 @@ void setup() {
   compass.init();
   compass.setCalibrationOffsets(-708.00, -1408.00, 895.00);
   compass.setCalibrationScales(1.33, 0.73, 1.14);
+
+  Serial.println("Starting Compass Reading...");
 }
 
 void loop() {
+  int angle = random(-180, 180); // Generate a random angle between 0 and 359
+  Serial.print("Target Angle: ");
+  Serial.println(angle);
 
-	int x, y, z, a, b;
-	char myArray[3];
-	
-	compass.read();
-  
-	x = compass.getX();
-	y = compass.getY();
-	z = compass.getZ();
-	
-	a = compass.getAzimuth();
-	
-	b = compass.getBearing(a);
+  while (true) { // Infinite loop until the azimuth equals angle
+    compass.read();
 
-	compass.getDirection(myArray, a);
-  
-  
-	Serial.print("X: ");
-	Serial.print(x);
+    int x = compass.getX();
+    int y = compass.getY();
+    int z = compass.getZ();
+    int azimuth = compass.getAzimuth();
+    char myArray[3];
 
-	Serial.print(" Y: ");
-	Serial.print(y);
+    compass.getDirection(myArray, azimuth);
 
-	Serial.print(" Z: ");
-	Serial.print(z);
+    Serial.print("Azimuth: ");
+    Serial.print(azimuth);
+    Serial.print(" | Target: ");
+    Serial.print(angle);
+    Serial.print(" | Direction: ");
+    Serial.print(myArray[0]);
+    Serial.print(myArray[1]);
+    Serial.print(myArray[2]);
+    Serial.println();
 
-	Serial.print(" Azimuth: ");
-	Serial.print(a);
+    if (abs(azimuth - angle) <= 5) {
+      Serial.println("Target azimuth reached! Exiting loop.");
+      break; // Exit the loop when azimuth equals angle
+    }
 
-	Serial.print(" Bearing: ");
-	Serial.print(b);
+    delay(250);
+  }
 
-	Serial.print(" Direction: ");
-	Serial.print(myArray[0]);
-	Serial.print(myArray[1]);
-	Serial.print(myArray[2]);
-
-	Serial.println();
-
-	delay(250);
+  while (true); // Stop the program
 }

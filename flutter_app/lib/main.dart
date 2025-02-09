@@ -1,3 +1,4 @@
+import 'dart:convert'; // 添加此导入以使用 UTF-8 编码器
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -5,7 +6,6 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/services.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,6 +41,13 @@ class _MainScreenState extends State<MainScreen> {
   Position? currentPosition;
   Stream<Position>? positionStream;
   StreamSubscription<List<ScanResult>>? scanSubscription;
+  StreamSubscription<BluetoothConnectionState>? _connectionStateSubscription;
+  bool isDiscoveringServices = false;
+
+  // 目标服务/特征 UUID | Target Service/Characteristic UUIDs
+  static const targetServiceUuid = "0000ff01-0000-1000-8000-00805f9b34fb";
+  static const wifiCharacteristicUuid = "0000ff03-0000-1000-8000-00805f9b34fb";
+  static const gpsCharacteristicUuid = "0000ff02-0000-1000-8000-00805f9b34fb";
 
   @override
   void initState() {
@@ -49,46 +56,54 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _checkPermissions() async {
-    // 请求位置权限
     if (Platform.isAndroid || Platform.isIOS) {
       Map<Permission, PermissionStatus> statuses = await [
-        Permission.location,
+        Permission.locationWhenInUse,
         Permission.bluetooth,
-        Permission.bluetoothAdvertise,
-        Permission.bluetoothConnect,
         Permission.bluetoothScan,
+        Permission.bluetoothConnect,
       ].request();
 
-      print("权限状态:");
-      statuses.forEach((key, value) => print("${key}: $value"));
+      statuses.forEach((key, value) {
+        print("Permission $key: ${value.isGranted ? 'Granted' : 'Denied'}");
+        if (!value.isGranted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text("Insufficient Permissions"),
+              content: Text("Please grant $key permission"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("OK"),
+                )
+              ],
+            ),
+          );
+        }
+      });
     }
   }
 
   Future<void> _scanDevices() async {
-    // 检查蓝牙是否可用
-    if (await FlutterBluePlus.isSupported == false) {
-      print("Bluetooth not available");
+    if (!await FlutterBluePlus.isSupported) {
+      print("Bluetooth not supported");
       return;
     }
 
-    // 停止现有扫描
     if (FlutterBluePlus.isScanningNow) {
       await FlutterBluePlus.stopScan();
       print("Stopped previous scan");
     }
 
     devices.clear();
-    setState(() {}); // 立即清空列表
+    setState(() {});
 
-    // 开始扫描
-    print("Starting BLE scan...");
     scanSubscription = FlutterBluePlus.scanResults.listen((results) {
-      for (ScanResult result in results) {
+      for (var result in results) {
         if (!devices.any((d) => d.remoteId == result.device.remoteId)) {
-          print("Found device: ${result.device.remoteId} | RSSI: ${result.rssi}");
-          setState(() {
-            devices.add(result.device);
-          });
+          print("Found device: ${result.device.platformName} (${result.device.remoteId})");
+          setState(() => devices.add(result.device));
         }
       }
     }, onError: (e) => print("Scan error: $e"));
@@ -97,20 +112,37 @@ class _MainScreenState extends State<MainScreen> {
       timeout: const Duration(seconds: 10),
       androidUsesFineLocation: true,
     );
+    print("Starting BLE scan...");
   }
 
   Future<void> _connectToDevice() async {
     if (selectedDevice == null) return;
 
-    print("Connecting to ${selectedDevice!.remoteId}");
+    print("Connecting to device: ${selectedDevice!.remoteId}");
     try {
-      await selectedDevice!.connect();
-      setState(() {
-        connectionState = BluetoothConnectionState.connected;
+      // Cancel previous subscriptions
+      _connectionStateSubscription?.cancel();
+
+      // Connect to device
+      await selectedDevice!.connect(timeout: const Duration(seconds: 15));
+
+      // Listen to connection state changes
+      _connectionStateSubscription = selectedDevice!.connectionState.listen((state) {
+        print("Connection state updated: $state");
+        setState(() => connectionState = state);
+
+        // Handle disconnection
+        if (state == BluetoothConnectionState.disconnected) {
+          positionStream?.drain();
+          currentPosition = null;
+        }
       });
-      _startLocationUpdates();
+
+      print("Connection successful, discovering services...");
+      await _startLocationUpdates();
     } catch (e) {
       print("Connection failed: $e");
+      setState(() => connectionState = BluetoothConnectionState.disconnected);
     }
   }
 
@@ -123,57 +155,102 @@ class _MainScreenState extends State<MainScreen> {
     );
 
     positionStream!.listen((Position position) {
+      if (connectionState != BluetoothConnectionState.connected) {
+        print("Skipping location update: Device not connected");
+        return;
+      }
       print("New position: $position");
-      setState(() {
-        currentPosition = position;
-      });
+      setState(() => currentPosition = position);
       _sendLocationData();
     });
   }
 
-  Future<void> _sendLocationData() async {
-    if (selectedDevice == null || currentPosition == null) return;
+// 修改 _sendData 方法
+  Future<void> _sendData(String characteristicUuid, String data) async {
+    if (selectedDevice == null ||
+        connectionState != BluetoothConnectionState.connected) {
+      print("[Error] Device not connected");
+      return;
+    }
 
     try {
-      List<BluetoothService> services = await selectedDevice!.discoverServices();
-
-      for (BluetoothService service in services) {
-        if (service.uuid.toString() == '0000ff01-0000-1000-8000-00805f9b34fb') {
-          for (BluetoothCharacteristic characteristic in service.characteristics) {
-            if (characteristic.uuid.toString() == '0000ff02-0000-1000-8000-00805f9b34fb') {
-              String locationData =
-                  'LAT:${currentPosition!.latitude},LON:${currentPosition!.longitude}';
-              await characteristic.write(locationData.codeUnits);
-              print("Sent location data: $locationData");
-            }
-          }
-        }
+      if (isDiscoveringServices) {
+        print("[Warning] Service discovery in progress...");
+        return;
       }
+      isDiscoveringServices = true;
+
+      // 1. 发现服务（带缓存优化）
+      List<BluetoothService> services = await selectedDevice!.discoverServices();
+      print("Discovered ${services.length} services");
+
+      // 2. 查找目标服务
+      final targetService = services.firstWhere(
+              (s) => s.uuid.toString() == targetServiceUuid,
+          orElse: () {
+            print("[Error] Service $targetServiceUuid not found");
+            throw 'Service not found';
+          }
+      );
+
+      // 3. 查找目标特征
+      final targetChar = targetService.characteristics.firstWhere(
+              (c) => c.uuid.toString() == characteristicUuid,
+          orElse: () {
+            print("[Error] Characteristic $characteristicUuid not found");
+            throw 'Characteristic not found';
+          }
+      );
+
+      // 4. 验证特征可写性
+      if (!targetChar.properties.write) {
+        print("[Error] Characteristic is not writable");
+        throw 'Write not permitted';
+      }
+
+      // 5. 使用UTF-8编码发送数据
+      print("Sending data (UTF-8): $data");
+      final encodedData = utf8.encode(data); // 关键修改点
+      await targetChar.write(encodedData, withoutResponse: true);
+      print("Data sent successfully");
+
+    } on FlutterBluePlusException catch (e) {
+      // 专用异常处理
+      print("""
+    BLE Operation Failed!
+    Code: ${e.code}
+    Description: ${e.description}
+    """);
     } catch (e) {
-      print("Error sending location: $e");
+      print("Unexpected error: $e");
+    } finally {
+      isDiscoveringServices = false;
     }
   }
 
+// 修改后的发送方法
   Future<void> _sendWifiCredentials() async {
-    if (selectedDevice == null) return;
+    try {
+      final credentials = 'SSID:${ssidController.text},PASS:${passwordController.text}';
+      print("Attempting to send WiFi credentials: $credentials");
+      await _sendData(wifiCharacteristicUuid, credentials);
+    } catch (e) {
+      print("WiFi credential send failed: $e");
+    }
+  }
+
+  Future<void> _sendLocationData() async {
+    if (currentPosition == null) {
+      print("[Warning] No location data available");
+      return;
+    }
 
     try {
-      List<BluetoothService> services = await selectedDevice!.discoverServices();
-
-      for (BluetoothService service in services) {
-        if (service.uuid.toString() == '0000ff01-0000-1000-8000-00805f9b34fb') {
-          for (BluetoothCharacteristic characteristic in service.characteristics) {
-            if (characteristic.uuid.toString() == '0000ff03-0000-1000-8000-00805f9b34fb') {
-              String credentials =
-                  'SSID:${ssidController.text},PASS:${passwordController.text}';
-              await characteristic.write(credentials.codeUnits);
-              print("Sent WiFi credentials: $credentials");
-            }
-          }
-        }
-      }
+      final locationData = 'LAT:${currentPosition!.latitude},LON:${currentPosition!.longitude}';
+      print("Attempting to send GPS data: $locationData");
+      await _sendData(gpsCharacteristicUuid, locationData);
     } catch (e) {
-      print("Error sending credentials: $e");
+      print("GPS data send failed: $e");
     }
   }
 
@@ -185,7 +262,7 @@ class _MainScreenState extends State<MainScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.bluetooth),
-            onPressed: () => _checkPermissions(),
+            onPressed: _checkPermissions,
           )
         ],
       ),
@@ -204,16 +281,20 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildScanSection() {
-    return Column(
-      children: [
-        ElevatedButton(
-          onPressed: _scanDevices,
-          child: const Text('Scan Devices'),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: _scanDevices,
+              child: const Text('Scan Devices'),
+            ),
+            const SizedBox(height: 10),
+            Text("Found ${devices.length} devices", style: const TextStyle(color: Colors.grey)),
+          ],
         ),
-        const SizedBox(height: 10),
-        Text("Found ${devices.length} devices",
-            style: const TextStyle(color: Colors.grey)),
-      ],
+      ),
     );
   }
 
@@ -285,7 +366,7 @@ class _MainScreenState extends State<MainScreen> {
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _sendWifiCredentials,
-              child: const Text('SYNC CREDENTIALS'),
+              child: const Text('SEND CREDENTIALS'),
             ),
           ],
         ),
@@ -299,8 +380,7 @@ class _MainScreenState extends State<MainScreen> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            const Text("GPS Status",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text("GPS STATUS", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             currentPosition != null
                 ? Text(
@@ -308,8 +388,7 @@ class _MainScreenState extends State<MainScreen> {
                   'Lon: ${NumberFormat('#.#####').format(currentPosition!.longitude)}',
               textAlign: TextAlign.center,
             )
-                : const Text("No location data",
-                style: TextStyle(color: Colors.grey)),
+                : const Text("No location data", style: TextStyle(color: Colors.grey)),
           ],
         ),
       ),
@@ -318,6 +397,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
+    _connectionStateSubscription?.cancel();
     scanSubscription?.cancel();
     FlutterBluePlus.stopScan();
     positionStream?.drain();

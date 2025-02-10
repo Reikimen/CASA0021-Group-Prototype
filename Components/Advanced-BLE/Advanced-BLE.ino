@@ -1,6 +1,7 @@
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
+#include <BLE2902.h>
 
 // ===== BLE Configuration =====
 #define SERVICE_UUID        "0000ff01-0000-1000-8000-00805f9b34fb"  // Must match with the app
@@ -64,6 +65,7 @@ void setup() {
     BLECharacteristic::PROPERTY_WRITE
   );
   pWifiCharacteristic->setCallbacks(new DataCallback());
+  pWifiCharacteristic->addDescriptor(new BLE2902());
 
   // Configure GPS characteristic
   pGpsCharacteristic = pService->createCharacteristic(
@@ -71,6 +73,7 @@ void setup() {
     BLECharacteristic::PROPERTY_WRITE
   );
   pGpsCharacteristic->setCallbacks(new DataCallback());
+  pGpsCharacteristic->addDescriptor(new BLE2902());
 
   // Start service
   pService->start();

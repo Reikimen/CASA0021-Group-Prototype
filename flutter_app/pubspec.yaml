@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # BLE
-  flutter_blue_plus: ^1.10.0
+  flutter_blue_plus: ^1.35.2
   geolocator: ^11.0.0
   permission_handler: ^10.4.0
   intl: ^0.18.1

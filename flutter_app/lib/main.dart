@@ -45,9 +45,9 @@ class _MainScreenState extends State<MainScreen> {
   bool isDiscoveringServices = false;
 
   // 目标服务/特征 UUID | Target Service/Characteristic UUIDs
-  static const targetServiceUuid = "0000ff01-0000-1000-8000-00805f9b34fb";
-  static const wifiCharacteristicUuid = "0000ff03-0000-1000-8000-00805f9b34fb";
-  static const gpsCharacteristicUuid = "0000ff02-0000-1000-8000-00805f9b34fb";
+  static const targetServiceUuid = "ff01";
+  static const wifiCharacteristicUuid = "ff03";
+  static const gpsCharacteristicUuid = "ff02";
 
   @override
   void initState() {
@@ -109,6 +109,7 @@ class _MainScreenState extends State<MainScreen> {
     }, onError: (e) => print("Scan error: $e"));
 
     await FlutterBluePlus.startScan(
+      withServices: [Guid(targetServiceUuid)], // 扫描时声明目标服务
       timeout: const Duration(seconds: 10),
       androidUsesFineLocation: true,
     );
@@ -124,7 +125,9 @@ class _MainScreenState extends State<MainScreen> {
       _connectionStateSubscription?.cancel();
 
       // Connect to device
-      await selectedDevice!.connect(timeout: const Duration(seconds: 15));
+      await selectedDevice!.connect(
+        timeout: const Duration(seconds: 15),
+      );
 
       // Listen to connection state changes
       _connectionStateSubscription = selectedDevice!.connectionState.listen((state) {
@@ -135,15 +138,17 @@ class _MainScreenState extends State<MainScreen> {
         if (state == BluetoothConnectionState.disconnected) {
           positionStream?.drain();
           currentPosition = null;
+        }else{
+          print("Connection successful, discovering services...");
         }
       });
 
-      print("Connection successful, discovering services...");
       await _startLocationUpdates();
     } catch (e) {
       print("Connection failed: $e");
       setState(() => connectionState = BluetoothConnectionState.disconnected);
     }
+
   }
 
   Future<void> _startLocationUpdates() async {
@@ -183,6 +188,12 @@ class _MainScreenState extends State<MainScreen> {
       // 1. 发现服务（带缓存优化）
       List<BluetoothService> services = await selectedDevice!.discoverServices();
       print("Discovered ${services.length} services");
+      services.forEach((service) {
+        print("Service UUID: ${service.uuid}");
+        service.characteristics.forEach((char) {
+          print("  Characteristic UUID: ${char.uuid}");
+        });
+      });
 
       // 2. 查找目标服务
       final targetService = services.firstWhere(
@@ -206,12 +217,14 @@ class _MainScreenState extends State<MainScreen> {
       if (!targetChar.properties.write) {
         print("[Error] Characteristic is not writable");
         throw 'Write not permitted';
+      }else{
+        print("Characteristic is writable");
       }
 
       // 5. 使用UTF-8编码发送数据
       print("Sending data (UTF-8): $data");
       final encodedData = utf8.encode(data); // 关键修改点
-      await targetChar.write(encodedData, withoutResponse: true);
+      await targetChar.write(encodedData, withoutResponse: false);
       print("Data sent successfully");
 
     } on FlutterBluePlusException catch (e) {

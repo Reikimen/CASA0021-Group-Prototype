@@ -20,13 +20,13 @@ BLECharacteristic *pWifiCharacteristic;
 BLECharacteristic *pGpsCharacteristic;
 bool deviceConnected = false;
 
-// ===== 添加全局变量存储解析结果 =====
+// ===== Parsed「Wi-Fi & GPS info」 =====
 String storedSSID = "";
 String storedPASS = "";
 float storedLAT = 0.0;
 float storedLON = 0.0;
 
-// ===== 存储函数实现 =====
+// ===== Stored function implementation =====
 void saveWiFiCredentials(const String &ssid, const String &pass) {
 
   preferences.begin("wifi-config", false);
@@ -42,41 +42,41 @@ void saveGPSData(float lat, float lon) {
   preferences.begin("gps-data", false);
   preferences.putFloat("lat", lat);
   preferences.putFloat("lng", lon);
-  preferences.putULong("timestamp", millis() / 1000); // 使用设备运行时间作为时间戳
+  preferences.putULong("timestamp", millis() / 1000); // Use the device run time as a timestamp
   preferences.end();
   
   Serial.printf("Saved GPS: %.6f,%.6f\n", lat, lon);
 }
 
-// ===== 专用解析函数 =====
+// ===== Special analytic(parse) function =====
 void parseWiFiData(const String &data) {
-  // 智能定位关键字段（兼容大小写）
+  // Intelligently locate key fields (case compatible)
   int ssidStart = data.indexOf("SSID:");
   int passStart = data.indexOf("PASS:");
 
-  // 新增分隔符查找
-  int delimiterPos = data.indexOf(',', ssidStart); // 查找SSID后的第一个逗号
+  // Added separator lookup
+  int delimiterPos = data.indexOf(',', ssidStart); // Finds the first comma after the SSID
 
   if (ssidStart == -1 || passStart == -1 || delimiterPos == -1) {
-    Serial.println("[WiFi] 数据格式错误");
+    Serial.println("[WiFi] Data format error");
     return;
   }
 
-  // 修正SSID截取范围（到逗号前）
+  // Fixed SSID intercept range (before comma)
   storedSSID = data.substring(ssidStart + 5, delimiterPos);
   storedSSID.trim();
 
-  // 修正PASS截取范围（从PASS:后开始）
+  // Fixed PASS intercept range (starting after PASS:)
   storedPASS = data.substring(passStart + 5);
   storedPASS.trim();
 
-  // 调试输出
-  Serial.printf("解析结果: SSID=[%s], PASS=[%s]\n", 
+  // Debug output
+  Serial.printf("Analysis results: SSID=[%s], PASS=[%s]\n", 
     storedSSID.c_str(), storedPASS.c_str());
 }
 
 void parseGPSData(const String &data) {
-  // 容错定位字段
+  // Fault tolerant location field
   int latStart = data.indexOf("LAT:");
   int lonStart = data.indexOf("LON:");
   
@@ -85,7 +85,7 @@ void parseGPSData(const String &data) {
     return;
   }
 
-  // 提取数值部分
+  // Extract the numeric part
   String latStr = data.substring(latStart + 4, lonStart);
   latStr.trim();
   storedLAT = latStr.toFloat();
@@ -93,13 +93,13 @@ void parseGPSData(const String &data) {
   String lonStr = data.substring(lonStart + 4);
   lonStr.trim();
   
-  // 处理可能存在的尾随字符
+  // Handle possible trailing characters
   int endPos = lonStr.indexOf(",");
   if(endPos != -1) lonStr = lonStr.substring(0, endPos);
   
   storedLON = lonStr.toFloat();
 
-  // 数据有效性验证
+  // Data validity verification
   if(abs(storedLAT) > 90 || abs(storedLON) > 180) {
     Serial.println("[GPS] Invalid coordinate values");
     return;
@@ -107,8 +107,8 @@ void parseGPSData(const String &data) {
 }
 
 void loadStoredWiFi() {
-  preferences.begin("wifi-config", true); // 只读模式打开
-  storedSSID = preferences.getString("ssid", "");  // 第二个参数是默认值
+  preferences.begin("wifi-config", true); // Open in read-only mode
+  storedSSID = preferences.getString("ssid", "");  // The second argument is the default
   storedPASS = preferences.getString("password", "");
   preferences.end();
 
@@ -117,15 +117,15 @@ void loadStoredWiFi() {
 
 void WiFi_Connector(){
   int counter = 60;
-  // 清理旧连接
+  // Clear old connections
   WiFi.disconnect(true);
   delay(100);
   
-  // 设置STA模式并启用自动重连
+  // Set STA mode and enable connection
   WiFi.mode(WIFI_STA);
   WiFi.begin(storedSSID.c_str(), storedPASS.c_str());
   
-  Serial.print("正在连接Wi-Fi");
+  Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED && counter > 0) {
     counter--;
     delay(500);
@@ -151,7 +151,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   void onDisconnect(BLEServer* pServer) {
     deviceConnected = false;
     Serial.println("Device「BLE」disconnected!");
-    // 延迟100ms后重启广播
+    // Restart the broadcast after a delay of 100ms
     delay(100);
     pServer->startAdvertising();
     Serial.println("BLE re-boardcasting...");
@@ -169,14 +169,14 @@ class DataCallback : public BLECharacteristicCallbacks {
       // Add WiFi data processing logic here
       Serial.printf("[WiFi] Received data (%d bytes): %s\n", value.length(), value.c_str());
       parseWiFiData(value);
-      saveWiFiCredentials(storedSSID, storedPASS);// 存储到非易失存储
+      saveWiFiCredentials(storedSSID, storedPASS);// Store to non-volatile storage
       WiFi_Connector();
     } 
     else if(uuid == CHARACTERISTIC_GPS) {
       // Add GPS data processing logic here
       Serial.printf("[GPS] Received data (%d bytes): %s\n", value.length(), value.c_str());
       parseGPSData(value);
-      saveGPSData(storedLAT, storedLON);// 持久化存储
+      saveGPSData(storedLAT, storedLON);// Store to non-volatile storage
     }
   }
 };

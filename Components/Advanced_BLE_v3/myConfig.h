@@ -1,3 +1,9 @@
+// 只保留一个取消注释，定义当前设备的模式
+// #define MODE_JACK   // 设备为 Jack 模式
+#define MODE_ROSE  // 设备为 Rose 模式
+#define COUPLE_NUM "001"
+
+// Here are the libs
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <BLEDevice.h>
@@ -36,9 +42,18 @@ const int   mqtt_port     = SECRET_MQTTPORT;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-// MQTT topics one for pubilic one for subscribe
-const char* mqtt_topic_A = "student/CASA0021/Group2/Jack";
-const char* mqtt_topic_B = "student/CASA0021/Group2/Rose";
+// ===== MQTT 主题定义 =====
+#ifdef MODE_JACK
+  // Jack 模式：
+  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
+  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
+#elif defined(MODE_ROSE)
+  // Rose 模式：
+  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
+  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
+#else
+  #error "Please define MODE_JACK or MODE_ROSE!"
+#endif
 
 // ===== Stored function implementation =====
 void saveWiFiCredentials(const String &ssid, const String &pass) {
@@ -198,7 +213,7 @@ class DataCallback : public BLECharacteristicCallbacks {
 };
 
 
-
+// ===== MQTT things =====
 void sendmqtt() {
   // 构造 JSON 格式的时间信息（此处固定为 "15mins"）
   char time_message[50];

@@ -8,7 +8,7 @@ void setup() {
 }
 
 void loop() {
-  // Keep an empty loop, all operations are handled by callbacks
+  // All operations of BLE, Wi-Fi & GPS info update are handled by callbacks
   // Check MQTT connections
   if (!client.connected()) {
     reconnectMQTT();
@@ -17,9 +17,8 @@ void loop() {
   // Keep MQTT client background tasks
   client.loop();
   
-  // Send time message
-  sendmqtt();
-  
-  Serial.println("Sent a time info message");
-  delay(10000);  // Send a message every 10 seconds
+  // Send message
+  sendmqtt(); // the function for sending MQTT message based on the mode you set in mgConfig.h
+
+  delay(500);  // Loop every 0.5 seconds
 }

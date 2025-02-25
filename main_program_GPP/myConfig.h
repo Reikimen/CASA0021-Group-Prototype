@@ -1,8 +1,3 @@
-// Keep only one cancel comment, defining the mode of the current device
-// #define MODE_JACK   // The device is in Jack mode
-#define MODE_ROSE  // The device is in Rose mode
-#define COUPLE_NUM "001"
-
 // Here are the libs
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -12,7 +7,23 @@
 #include <BLE2902.h>
 #include <Preferences.h>
 
-Preferences preferences;
+// Keep only one cancel comment, defining the mode of the current device
+// #define MODE_JACK   // The device is in Jack mode
+#define MODE_ROSE  // The device is in Rose mode
+#define COUPLE_NUM "001" // The couple's number
+
+// ===== MQTT Topic definition =====
+#ifdef MODE_JACK
+  // Jack 模式：
+  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
+  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
+#elif defined(MODE_ROSE)
+  // Rose 模式：
+  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
+  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
+#else
+  #error "Please define MODE_JACK or MODE_ROSE!"
+#endif
 
 // ===== BLE Configuration =====
 #define SERVICE_UUID        "0000ff01-0000-1000-8000-00805f9b34fb"  // Must match with the app
@@ -39,21 +50,10 @@ const char* mqtt_password = SECRET_MQTTPASS;
 const char* mqtt_server   = SECRET_MQTTSERVER;
 const int   mqtt_port     = SECRET_MQTTPORT;
 
+Preferences preferences;
+
 WiFiClient espClient;
 PubSubClient client(espClient);
-
-// ===== MQTT Topic definition =====
-#ifdef MODE_JACK
-  // Jack 模式：
-  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
-  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
-#elif defined(MODE_ROSE)
-  // Rose 模式：
-  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
-  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
-#else
-  #error "Please define MODE_JACK or MODE_ROSE!"
-#endif
 
 // ===== Stored function implementation =====
 void saveWiFiCredentials(const String &ssid, const String &pass) {
@@ -135,7 +135,7 @@ void parseGPSData(const String &data) {
   }
 }
 
-// ===== WiFi connecting function =====
+// ===== Load storaged Info function =====
 void loadStoredWiFi() {
   preferences.begin("wifi-config", true); // Open in read-only mode
   storedSSID = preferences.getString("ssid", "");  // The second argument is the default
@@ -230,9 +230,9 @@ void sendmqtt() {
   
   // Post A message to the topic of Device A (for Device B subscription)
   if (client.publish(mqtt_topic_A, time_message)) {
-    Serial.println("Time info updated successfully!");
+    Serial.println("Message upload successfully!「MQTT」");
   } else {
-    Serial.println("Failed to update time info.");
+    Serial.println("Failed to update info.「MQTT」");
   }
 }
 

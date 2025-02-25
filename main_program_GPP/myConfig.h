@@ -8,8 +8,8 @@
 #include <Preferences.h>
 
 // Keep only one cancel comment, defining the mode of the current device
-// #define MODE_JACK   // The device is in Jack mode
-#define MODE_ROSE  // The device is in Rose mode
+#define MODE_JACK   // The device is in Jack mode
+// #define MODE_ROSE  // The device is in Rose mode
 #define COUPLE_NUM "001" // The couple's number
 
 // ===== MQTT Topic definition =====
@@ -196,6 +196,140 @@ void WiFi_Connector(){
   }
 }
 
+// ===== MQTT things =====
+// Function for Connect to MQTT and Sub MQTT Topics
+void reconnectMQTT() {
+  // If the WiFi is disconnected, reconnect the WiFi first
+  if (WiFi.status() != WL_CONNECTED) {
+    WiFi_Connector();
+  }
+  
+  // Loop attempts to connect to MQTT Broker
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Generate a random client ID
+    String clientId = "Device_ESP32_";
+    clientId += String(random(0xffff), HEX);
+    
+    // Attempt connection
+    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
+      Serial.println("Connected to MQTT broker");
+      // After the connection is successful, subscribe to the theme of Device B
+      if (client.subscribe(mqtt_topic_B_LAT)) {
+        Serial.print("Subscribed to topic: ");
+        Serial.println(mqtt_topic_B_LAT);
+      } else {
+        Serial.print("Failed to subscribe to topic: ");
+        Serial.println(mqtt_topic_B_LAT);
+      }
+      if (client.subscribe(mqtt_topic_B_LON)) {
+        Serial.print("Subscribed to topic: ");
+        Serial.println(mqtt_topic_B_LON);
+      } else {
+        Serial.print("Failed to subscribe to topic: ");
+        Serial.println(mqtt_topic_B_LON);
+      }
+      if (client.subscribe(mqtt_topic_B_MODE)) {
+        Serial.print("Subscribed to topic: ");
+        Serial.println(mqtt_topic_B_MODE);
+      } else {
+        Serial.print("Failed to subscribe to topic: ");
+        Serial.println(mqtt_topic_B_MODE);
+      }
+    } else {
+      Serial.print("Failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" - trying again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+// Fuction for Sending location info through 
+void sendmqtt_location() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char LAT_message[50];
+  sprintf(LAT_message, "%.5f", storedLAT);
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_LAT, LAT_message)) {
+    Serial.println("Message upload successfully!「MQTT-LAT」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-LAT」");
+  }
+  char LON_message[50];
+  sprintf(LON_message, "%.5f", storedLON);
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_LON, LON_message)) {
+    Serial.println("Message upload successfully!「MQTT-LON」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-LON」");
+  }
+}
+
+// Functions for sending emotions
+void sendmqtt_happy() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char emotion_message[50];
+  sprintf(emotion_message, "happy");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_MODE, emotion_message)) {
+    Serial.println("Message upload successfully!「MQTT-happy」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-happy」");
+  }
+}
+void sendmqtt_sad() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char emotion_message[50];
+  sprintf(emotion_message, "sad");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_MODE, emotion_message)) {
+    Serial.println("Message upload successfully!「MQTT-sad」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-sad」");
+  }
+}
+void sendmqtt_angry() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char emotion_message[50];
+  sprintf(emotion_message, "angry");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_MODE, emotion_message)) {
+    Serial.println("Message upload successfully!「MQTT-angry」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-angry」");
+  }
+}
+void sendmqtt_normal() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char emotion_message[50];
+  sprintf(emotion_message, "normal");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_MODE, emotion_message)) {
+    Serial.println("Message upload successfully!「MQTT-normal」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-normal」");
+  }
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  // 当接收到订阅主题的消息时，通过串口打印出来
+  Serial.print("Message arrived [");
+  //  if(topic mode) changed turn default light
+  Serial.print(topic);
+  Serial.print("]: ");
+  for (unsigned int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+}
+
 // ===== BLE Server Callback =====
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
@@ -232,71 +366,10 @@ class DataCallback : public BLECharacteristicCallbacks {
       Serial.printf("[GPS] Received data (%d bytes): %s\n", value.length(), value.c_str());
       parseGPSData(value);
       saveGPSData(storedLAT, storedLON);// Store to non-volatile storage
+      sendmqtt_location();
     }
   }
 };
-
-
-// ===== MQTT things =====
-
-void reconnectMQTT() {
-  // If the WiFi is disconnected, reconnect the WiFi first
-  if (WiFi.status() != WL_CONNECTED) {
-    WiFi_Connector();
-  }
-  
-  // Loop attempts to connect to MQTT Broker
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Generate a random client ID
-    String clientId = "Device_ESP32_";
-    clientId += String(random(0xffff), HEX);
-    
-    // Attempt connection
-    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
-      Serial.println("Connected to MQTT broker");
-      // After the connection is successful, subscribe to the theme of Device B
-      if (client.subscribe(mqtt_topic_B)) {
-        Serial.print("Subscribed to topic: ");
-        Serial.println(mqtt_topic_B);
-      } else {
-        Serial.print("Failed to subscribe to topic: ");
-        Serial.println(mqtt_topic_B);
-      }
-    } else {
-      Serial.print("Failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" - trying again in 5 seconds");
-      delay(5000);
-    }
-  }
-}
-
-void sendmqtt() {
-  // Constructing time information in JSON format (fixed here as "15mins")
-  char time_message[50];
-  sprintf(time_message, "{\"time\": \"15mins\"}");
-  
-  // Post A message to the topic of Device A (for Device B subscription)
-  if (client.publish(mqtt_topic_A, time_message)) {
-    Serial.println("Message upload successfully!「MQTT」");
-  } else {
-    Serial.println("Failed to update info.「MQTT」");
-  }
-}
-
-
-void callback(char* topic, byte* payload, unsigned int length) {
-  // 当接收到订阅主题的消息时，通过串口打印出来
-  Serial.print("Message arrived [");
-  //  if(topic mode) changed turn default light
-  Serial.print(topic);
-  Serial.print("]: ");
-  for (unsigned int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
-}
 
 // ===== Compass init pls put at the end of the myConfig.h =====
 void Compass_init(){

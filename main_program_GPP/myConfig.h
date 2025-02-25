@@ -144,7 +144,16 @@ void loadStoredWiFi() {
 
   Serial.printf("Loaded WiFi: %s,%s\n", storedSSID.c_str(), storedPASS.c_str());
 }
+void loadStoredGPS() {
+  preferences.begin("gps-data", true); // Open in read-only mode
+  storedLAT = preferences.getFloat("lat", 0.0);   // The second argument is the default
+  storedLON = preferences.getFloat("lng", 0.0);
+  preferences.end(); // close Preferences
 
+  Serial.printf("Loaded GPS: Latitude=%.6f, Longitude=%.6f\n", storedLAT, storedLON);
+}
+
+// ===== WiFi connecting function =====
 void WiFi_Connector(){
   int counter = 60;
   // Clear old connections
@@ -309,6 +318,7 @@ void Compass_init(){
   Serial.println("BLE service started, waiting for connection...");
 
   loadStoredWiFi();
+  loadStoredGPS();
   WiFi_Connector();
 
   // If the wifi is successfully connected, setup the MQTT

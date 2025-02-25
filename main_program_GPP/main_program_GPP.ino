@@ -17,17 +17,16 @@ void loop() {
   // Keep MQTT client background tasks
   client.loop();
   
-  // After some interrupt events "press button" then Send message
+  // After some interrupt events "press button" then Send message, the functions bellow are all ready for call
   // sendmqtt_location(); // the function for sending MQTT GPS message based on the mode you set in mgConfig.h
-  
-  sendmqtt_happy();
-  delay(500);
-  sendmqtt_sad();
-  delay(500);
-  sendmqtt_angry();
-  delay(500);
-  sendmqtt_normal();
-  delay(500);
+  // sendmqtt_happy();
+  // delay(500);
+  // sendmqtt_sad();
+  // delay(500);
+  // sendmqtt_angry();
+  // delay(500);
+  // sendmqtt_normal();
+  // delay(500);
 
   delay(500);  // Loop every 0.5 seconds
 }

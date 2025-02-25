@@ -409,12 +409,20 @@ void Compass_init(){
   Serial.println("BLE service started, waiting for connection...");
 
   loadStoredWiFi();
-  loadStoredGPS();
   WiFi_Connector();
 
   // If the wifi is successfully connected, setup the MQTT
   client.setServer(mqtt_server, mqtt_port);
   // Set the MQTT callback function to be triggered when a subscription message is received
   client.setCallback(callback);
+
+  if (!client.connected()) {
+    reconnectMQTT();
+  }
+  delay(500);
+
+  // Load the GPS info and upload to the MQTT
+  loadStoredGPS();
+  sendmqtt_location();
 }
 

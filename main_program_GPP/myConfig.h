@@ -14,13 +14,21 @@
 
 // ===== MQTT Topic definition =====
 #ifdef MODE_JACK
-  // Jack 模式：
-  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
-  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
+  // Jack 模式：A 为发布主题，B为订阅的主题
+  const char* mqtt_topic_A_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LAT";
+  const char* mqtt_topic_A_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LON";
+  const char* mqtt_topic_A_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/MODE";
+  const char* mqtt_topic_B_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LAT";
+  const char* mqtt_topic_B_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LON";
+  const char* mqtt_topic_B_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/MODE";
 #elif defined(MODE_ROSE)
-  // Rose 模式：
-  const char* mqtt_topic_A = "student/CASA0021/Group2/" COUPLE_NUM "/Rose";
-  const char* mqtt_topic_B = "student/CASA0021/Group2/" COUPLE_NUM "/Jack";
+  // Rose 模式：A 为发布主题，B为订阅的主题
+  const char* mqtt_topic_B_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LAT";
+  const char* mqtt_topic_B_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LON";
+  const char* mqtt_topic_B_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/MODE";
+  const char* mqtt_topic_A_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LAT";
+  const char* mqtt_topic_A_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LON";
+  const char* mqtt_topic_A_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/MODE";
 #else
   #error "Please define MODE_JACK or MODE_ROSE!"
 #endif
@@ -29,7 +37,14 @@
 #define SERVICE_UUID        "0000ff01-0000-1000-8000-00805f9b34fb"  // Must match with the app
 #define CHARACTERISTIC_WIFI "0000ff03-0000-1000-8000-00805f9b34fb"  // WiFi characteristic
 #define CHARACTERISTIC_GPS  "0000ff02-0000-1000-8000-00805f9b34fb"  // GPS characteristic
-#define DEVICE_NAME         "ESP32-Data-Receiver"                   // Device name
+
+#ifdef MODE_JACK
+  #define DEVICE_NAME         "ESP32-" COUPLE_NUM "-Jack"                   // Device name
+#elif defined(MODE_ROSE)
+  #define DEVICE_NAME         "ESP32-" COUPLE_NUM "-Rose"                   // Device name
+#else
+  #error "Please define MODE_JACK or MODE_ROSE!"
+#endif
 
 // ===== Global Variables =====
 BLEServer *pServer;
@@ -223,18 +238,6 @@ class DataCallback : public BLECharacteristicCallbacks {
 
 
 // ===== MQTT things =====
-void sendmqtt() {
-  // Constructing time information in JSON format (fixed here as "15mins")
-  char time_message[50];
-  sprintf(time_message, "{\"time\": \"15mins\"}");
-  
-  // Post A message to the topic of Device A (for Device B subscription)
-  if (client.publish(mqtt_topic_A, time_message)) {
-    Serial.println("Message upload successfully!「MQTT」");
-  } else {
-    Serial.println("Failed to update info.「MQTT」");
-  }
-}
 
 void reconnectMQTT() {
   // If the WiFi is disconnected, reconnect the WiFi first
@@ -269,9 +272,24 @@ void reconnectMQTT() {
   }
 }
 
+void sendmqtt() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char time_message[50];
+  sprintf(time_message, "{\"time\": \"15mins\"}");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A, time_message)) {
+    Serial.println("Message upload successfully!「MQTT」");
+  } else {
+    Serial.println("Failed to update info.「MQTT」");
+  }
+}
+
+
 void callback(char* topic, byte* payload, unsigned int length) {
   // 当接收到订阅主题的消息时，通过串口打印出来
   Serial.print("Message arrived [");
+  //  if(topic mode) changed turn default light
   Serial.print(topic);
   Serial.print("]: ");
   for (unsigned int i = 0; i < length; i++) {

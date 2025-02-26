@@ -19,17 +19,14 @@ int emotionDebugCount = 300;
 // ===== Main Program =====c:\Users\JiaYing\Downloads\arduino_secrets.h
 void setup() {
   Serial.begin(115200);
-  Compass_init();
   calibrateCompass(); // 每次启动时进行校准
-  Serial.println("Starting Compass Reading...");
+  Compass_init();
 }
 
 void loop() {
   // All operations of BLE, Wi-Fi & GPS info update are handled by callbacks
   // Check MQTT connections
-  if (!client.connected()) {
-    reconnectMQTT();
-  }
+  reconnectMQTT();// 如果Wi-Fi没连接就先连接Wi-Fi，没连接MQTT就连接MQTT
   
   // Keep MQTT client background tasks
   client.loop();
@@ -38,7 +35,7 @@ void loop() {
   if (loactionCount >= 0){
     loactionCount--;
   }else{
-    loactionCount = 50;
+    loactionCount = 200; // 除了第一次是开启后5s发送，之后都是20s发送一次，减少播客占用
     sendmqtt_location(); // the function for sending MQTT GPS message based on the mode you set in mgConfig.h
   }
 
@@ -48,7 +45,7 @@ void loop() {
     emotionDebugCount--;
   }else{
     emotionDebugCount = 300;
-    sendmqtt_happy(); // the function for sending MQTT message based on the mode you set in mgConfig.h
+    sendmqtt_angry(); // the function for sending MQTT message based on the mode you set in mgConfig.h
   }
   // 以下为各个心情事件的函数名称
   // sendmqtt_happy();
@@ -58,6 +55,7 @@ void loop() {
   // delay(500);
 
   if (!ReadOrNot){ // 如果还没有阅读对面的情绪信息，需要一直旋转罗盘直到对准对面
+    Serial.println("Pls use the compase to find the dir.");
     delay(8000); // 本应是一个关于旋转角的if嵌套，此处先用delay模拟
     // 如果没有对准，使用灯光指示
     // 如果对准了做以下动作

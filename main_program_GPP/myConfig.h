@@ -281,7 +281,7 @@ void sendmqtt_location() {
 // Functions for sending emotions
 void sendmqtt_happy() {
   // Constructing time information in JSON format (fixed here as "15mins")
-  char emotion_message[50];
+  char emotion_message[10];
   sprintf(emotion_message, "happy");
   
   // Post A message to the topic of Device A (for Device B subscription)
@@ -293,7 +293,7 @@ void sendmqtt_happy() {
 }
 void sendmqtt_sad() {
   // Constructing time information in JSON format (fixed here as "15mins")
-  char emotion_message[50];
+  char emotion_message[10];
   sprintf(emotion_message, "sad");
   
   // Post A message to the topic of Device A (for Device B subscription)
@@ -305,7 +305,7 @@ void sendmqtt_sad() {
 }
 void sendmqtt_angry() {
   // Constructing time information in JSON format (fixed here as "15mins")
-  char emotion_message[50];
+  char emotion_message[10];
   sprintf(emotion_message, "angry");
   
   // Post A message to the topic of Device A (for Device B subscription)
@@ -317,7 +317,7 @@ void sendmqtt_angry() {
 }
 void sendmqtt_normal() {
   // Constructing time information in JSON format (fixed here as "15mins")
-  char emotion_message[50];
+  char emotion_message[10];
   sprintf(emotion_message, "normal");
   
   // Post A message to the topic of Device A (for Device B subscription)
@@ -330,7 +330,7 @@ void sendmqtt_normal() {
 // For Reading STATUS
 void sendmqtt_STATUS_NoEvent() {
   // Constructing time information in JSON format (fixed here as "15mins")
-  char STATUS_message[50];
+  char STATUS_message[10];
   sprintf(STATUS_message, "NoEvent");
   
   // Post A message to the topic of Device A (for Device B subscription)
@@ -342,7 +342,7 @@ void sendmqtt_STATUS_NoEvent() {
 }
 void sendmqtt_STATUS_Read() {
   // Constructing time information in JSON format (fixed here as "15mins")
-  char STATUS_message[50];
+  char STATUS_message[10];
   sprintf(STATUS_message, "Read");
   
   // Post A message to the topic of Device A (for Device B subscription)
@@ -354,7 +354,7 @@ void sendmqtt_STATUS_Read() {
 }
 void sendmqtt_STATUS_UnRead() {
   // Constructing time information in JSON format (fixed here as "15mins")
-  char STATUS_message[50];
+  char STATUS_message[10];
   sprintf(STATUS_message, "UnRead");
   
   // Post A message to the topic of Device A (for Device B subscription)
@@ -382,12 +382,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.printf("Updated pair LAT: %.6f\n", grabedLAT);
   }
   // 处理 LON 主题
-  else if (strcmp(topic, mqtt_topic_B_LON) == 0) {
+  if (strcmp(topic, mqtt_topic_B_LON) == 0) {
     grabedLON = atof(message); // 字符串转浮点数
     Serial.printf("Updated pair LON: %.6f\n", grabedLON);
   }
   // 处理 MODE 主题
-  else if (strcmp(topic, mqtt_topic_B_MODE) == 0) {
+  if (strcmp(topic, mqtt_topic_B_MODE) == 0) {
     // 判断情绪类型并触发对应动作
     if (strcmp(message, "happy") == 0) {
       Serial.println("「Emotion」Pair is HAPPY! Trigger rainbow effect");

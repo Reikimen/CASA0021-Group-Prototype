@@ -20,7 +20,8 @@ int emotionDebugCount = 300;
 void setup() {
   Serial.begin(115200);
   calibrateCompass(); // 每次启动时进行校准
-  Compass_init();
+  waitForNorthCalibration();  // First detect azimuth == 0 before proceeding 
+  Compass_BLE_WiFi_MQTT_init();
 }
 
 void loop() {
@@ -41,12 +42,12 @@ void loop() {
 
   // 按下某个按钮触发某个心情事件，发送MQTT
   // 以下为每30s模拟按下一次按钮
-  if (emotionDebugCount >= 0){
-    emotionDebugCount--;
-  }else{
-    emotionDebugCount = 300;
-    sendmqtt_angry(); // the function for sending MQTT message based on the mode you set in mgConfig.h
-  }
+  // if (emotionDebugCount >= 0){
+  //   emotionDebugCount--;
+  // }else{
+  //   emotionDebugCount = 300;
+  //   sendmqtt_angry(); // the function for sending MQTT message based on the mode you set in mgConfig.h
+  // }
   // 以下为各个心情事件的函数名称
   // sendmqtt_happy();
   // sendmqtt_sad();
@@ -55,13 +56,37 @@ void loop() {
   // delay(500);
 
   if (!ReadOrNot){ // 如果还没有阅读对面的情绪信息，需要一直旋转罗盘直到对准对面
-    Serial.println("Pls use the compase to find the dir.");
-    delay(8000); // 本应是一个关于旋转角的if嵌套，此处先用delay模拟
-    // 如果没有对准，使用灯光指示
-    // 如果对准了做以下动作
-    sendmqtt_STATUS_Read(); //发布：已经收到对方情绪
-    ReadOrNot = true; // 将阅读状态改为已读
-    // 再根据 pairStatus for normal, 1 for happy, 2 for sad, 3 for angry，显示对应的颜色
+    // Serial.println("Pls use the compase to find the dir.");
+
+    double bearing = calculateBearing(storedLAT, storedLON, grabedLAT, grabedLON);
+
+    compass.read();
+      
+    int azimuth = compass.getAzimuth();
+    char myArray[3];
+    compass.getDirection(myArray, azimuth);
+
+    Serial.print("Azimuth: ");
+    Serial.print(azimuth);
+    Serial.print(" | Target: ");
+    Serial.print(bearing);
+    Serial.print(" | Direction: ");
+    Serial.print(myArray[0]);
+    Serial.print(myArray[1]);
+    Serial.print(myArray[2]);
+    Serial.println();
+
+    // Check if azimuth is within ±5 degrees of the target
+    if (isTargetAzimuthReached(azimuth, bearing)) {
+      // 如果对准了做以下动作
+      sendmqtt_STATUS_Read(); //发布：已经收到对方情绪
+      ReadOrNot = true; // 将全局变量阅读状态改为已读
+      // 再根据 pairStatus for normal, 1 for happy, 2 for sad, 3 for angry，显示对应的颜色
+      Serial.println("Indicate your pair's emotion「LED」, 1 for happy, 2 for sad, 3 for angry");
+    }
+    else {
+      // 如果没有对准，使用灯光指示
+    }
   }
 
   delay(100);  // Loop every 0.1 seconds

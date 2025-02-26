@@ -4,8 +4,10 @@ QMC5883LCompass compass;
 
 //  calibration
 void calibrateCompass() {
+  compass.init();
+  delay(3000);
   Serial.println("Starting Calibration. Move the sensor in all directions...");
-  // delay(5000);
+  
   Serial.println("Calibrating...");
 
   compass.calibrate();
@@ -58,7 +60,7 @@ void waitForNorthCalibration() {
       break;
     }
 
-    delay(250);
+    delay(100);
   }
 }
 
@@ -81,8 +83,8 @@ float calculateBearing(float lat1, float lon1, float lat2, float lon2) {
     theta = theta * 180.0 / M_PI;
 
     // reflect between 0 - 360
-    if (theta < 0) {
-        theta += 360.0;
+    if (theta > 180) {
+        theta -= 360.0;
     }
 
     return theta;

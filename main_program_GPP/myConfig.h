@@ -487,7 +487,7 @@ class DataCallback : public BLECharacteristicCallbacks {
 };
 
 // ===== Compass init pls put at the end of the myConfig.h =====
-void Compass_init(){
+void Compass_BLE_WiFi_MQTT_init(){
   // Initialize BLE
   BLEDevice::init(DEVICE_NAME);
   pServer = BLEDevice::createServer();

@@ -1,15 +1,6 @@
-// Here are the libs
-#include <WiFi.h>
-#include <PubSubClient.h>
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <BLE2902.h>
-#include <Preferences.h>
-
 // Keep only one cancel comment, defining the mode of the current device
-#define MODE_JACK   // The device is in Jack mode
-// #define MODE_ROSE  // The device is in Rose mode
+// #define MODE_JACK   // The device is in Jack mode
+#define MODE_ROSE  // The device is in Rose mode
 #define COUPLE_NUM "001" // The couple's number
 
 // ===== MQTT Topic definition =====
@@ -17,18 +8,22 @@
   // Jack 模式：A 为发布主题，B为订阅的主题
   const char* mqtt_topic_A_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LAT";
   const char* mqtt_topic_A_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LON";
-  const char* mqtt_topic_A_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/MODE";
+  const char* mqtt_topic_A_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/MODE"; // for emotion
+  const char* mqtt_topic_A_STATUS = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/STATUS"; // for message status
   const char* mqtt_topic_B_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LAT";
   const char* mqtt_topic_B_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LON";
-  const char* mqtt_topic_B_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/MODE";
+  const char* mqtt_topic_B_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/MODE"; // for emotion
+  const char* mqtt_topic_B_STATUS = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/STATUS"; // for message status
 #elif defined(MODE_ROSE)
   // Rose 模式：A 为发布主题，B为订阅的主题
   const char* mqtt_topic_B_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LAT";
   const char* mqtt_topic_B_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/LON";
-  const char* mqtt_topic_B_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/MODE";
+  const char* mqtt_topic_B_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/MODE"; // for emotion
+  const char* mqtt_topic_B_STATUS = "student/CASA0021/Group2/" COUPLE_NUM "/Jack/STATUS"; // for message status
   const char* mqtt_topic_A_LAT = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LAT";
   const char* mqtt_topic_A_LON = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/LON";
-  const char* mqtt_topic_A_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/MODE";
+  const char* mqtt_topic_A_MODE = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/MODE"; // for emotion
+  const char* mqtt_topic_A_STATUS = "student/CASA0021/Group2/" COUPLE_NUM "/Rose/STATUS"; // for message status
 #else
   #error "Please define MODE_JACK or MODE_ROSE!"
 #endif
@@ -47,6 +42,11 @@
 #endif
 
 // ===== Global Variables =====
+// Reading Status
+bool ReadOrNot = true; // true表示已读，也表示自己没有待处理的对方情绪事件
+int pairStatus = 0; // 0 for normal, 1 for happy, 2 for sad, 3 for angry 
+
+// BLE
 BLEServer *pServer;
 BLEService *pService;
 BLECharacteristic *pWifiCharacteristic;
@@ -56,8 +56,11 @@ bool deviceConnected = false;
 // ===== Parsed「Wi-Fi & GPS info」 =====
 String storedSSID = "";
 String storedPASS = "";
-float storedLAT = 0.0;
+float storedLAT = 0.0; // stored is for the device owner's location
 float storedLON = 0.0;
+// The pair's location
+float grabedLAT = 0.0; // grabed is for the pair's location
+float grabedLON = 0.0;
 
 // ===== Secreted「MQTT info」 =====
 const char* mqtt_username = SECRET_MQTTUSER;
@@ -236,6 +239,13 @@ void reconnectMQTT() {
         Serial.print("Failed to subscribe to topic: ");
         Serial.println(mqtt_topic_B_MODE);
       }
+      if (client.subscribe(mqtt_topic_B_STATUS)) {
+        Serial.print("Subscribed to topic: ");
+        Serial.println(mqtt_topic_B_STATUS);
+      } else {
+        Serial.print("Failed to subscribe to topic: ");
+        Serial.println(mqtt_topic_B_STATUS);
+      }
     } else {
       Serial.print("Failed, rc=");
       Serial.print(client.state());
@@ -317,17 +327,122 @@ void sendmqtt_normal() {
     Serial.println("Failed to update info.「MQTT-normal」");
   }
 }
+// For Reading STATUS
+void sendmqtt_STATUS_NoEvent() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char STATUS_message[50];
+  sprintf(STATUS_message, "NoEvent");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_STATUS, STATUS_message)) {
+    Serial.println("Message upload successfully!「MQTT-STATUS-NoEvent」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-STATUS-NoEvent」");
+  }
+}
+void sendmqtt_STATUS_Read() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char STATUS_message[50];
+  sprintf(STATUS_message, "Read");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_STATUS, STATUS_message)) {
+    Serial.println("Message upload successfully!「MQTT-STATUS-READ」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-STATUS-READ」");
+  }
+}
+void sendmqtt_STATUS_UnRead() {
+  // Constructing time information in JSON format (fixed here as "15mins")
+  char STATUS_message[50];
+  sprintf(STATUS_message, "UnRead");
+  
+  // Post A message to the topic of Device A (for Device B subscription)
+  if (client.publish(mqtt_topic_A_STATUS, STATUS_message)) {
+    Serial.println("Message upload successfully!「MQTT-STATUS-UnREAD」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-STATUS-UnREAD」");
+  }
+}
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  // 当接收到订阅主题的消息时，通过串口打印出来
+  // 将 payload 转换为字符串（注意添加终止符）
+  char message[length + 1];
+  memcpy(message, payload, length);
+  message[length] = '\0'; // 确保字符串正确终止
+
   Serial.print("Message arrived [");
-  //  if(topic mode) changed turn default light
   Serial.print(topic);
   Serial.print("]: ");
-  for (unsigned int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+  Serial.println(message);
+
+  // 处理 LAT 主题
+  if (strcmp(topic, mqtt_topic_B_LAT) == 0) {
+    grabedLAT = atof(message); // 字符串转浮点数
+    Serial.printf("Updated pair LAT: %.6f\n", grabedLAT);
   }
-  Serial.println();
+  // 处理 LON 主题
+  else if (strcmp(topic, mqtt_topic_B_LON) == 0) {
+    grabedLON = atof(message); // 字符串转浮点数
+    Serial.printf("Updated pair LON: %.6f\n", grabedLON);
+  }
+  // 处理 MODE 主题
+  else if (strcmp(topic, mqtt_topic_B_MODE) == 0) {
+    // 判断情绪类型并触发对应动作
+    if (strcmp(message, "happy") == 0) {
+      Serial.println("「Emotion」Pair is HAPPY! Trigger rainbow effect");
+      // 首先发送"UnRead「Status」"信息
+      ReadOrNot = false;
+      pairStatus = 1;
+      sendmqtt_STATUS_UnRead();
+      // 振动提醒用户，进行“Aligned”的相关操作
+    } else if (strcmp(message, "sad") == 0) {
+      Serial.println("「Emotion」Pair is SAD. Show blue slow pulse");
+      // 首先发送"UnRead「Status」"信息
+      ReadOrNot = false;
+      pairStatus = 2;
+      sendmqtt_STATUS_UnRead();
+      // 振动提醒用户，进行“Aligned”的相关操作
+    } else if (strcmp(message, "angry") == 0) {
+      Serial.println("「Emotion」Pair is ANGRY! Red alert");
+      // 首先发送"UnRead「Status」"信息
+      ReadOrNot = false;
+      pairStatus = 3;
+      sendmqtt_STATUS_UnRead();
+      // 振动提醒用户，进行“Aligned”的相关操作
+    } else if (strcmp(message, "normal") == 0) {
+      Serial.println("「Emotion」Pair back to NORMAL");
+      // 保持"NoEvent「Status」"信息
+      sendmqtt_STATUS_NoEvent();
+    } else {
+      Serial.println("Unknown emotion received");
+    }
+  }
+  // 处理 STATUS 状态
+  else if (strcmp(topic, mqtt_topic_B_STATUS) == 0) {
+    // 判断Event Status并触发对应动作
+    if (strcmp(message, "NoEvent") == 0) {
+      Serial.println("「STATUS」There is no Event right now.");
+      // 这里可以添加 LED 控制逻辑
+    } else if (strcmp(message, "Read") == 0) {
+      Serial.println("「STATUS」Your Pair have found your Emotion!");
+      // 这里可以添加 LED 控制逻辑，振动等，表明对方收到了
+      // 既然对方已经收到了，将自己的情绪转换为“normal”
+      sendmqtt_normal();
+    } else if (strcmp(message, "UnRead") == 0) {
+      Serial.println("「STATUS」You've sent your emotion, please wait!");
+      // 此处可以没有操作，也可以添加LED等待的显示效果,例如呼吸灯
+    } else {
+      Serial.println("Unknown Status received");
+    }
+  }
+
+  // 添加数值有效性检查
+  if (isnan(grabedLAT) || isnan(grabedLON)) {
+    Serial.println("Warning: Received invalid GPS coordinates!");
+    grabedLAT = 0.0;
+    grabedLON = 0.0;
+  }
 }
 
 // ===== BLE Server Callback =====

@@ -61,7 +61,7 @@ void loop() {
     delay(8000); // 本应是一个关于旋转角的if嵌套，此处先用delay模拟
     // 如果没有对准，使用灯光指示
     // 如果对准了做以下动作
-    sendmqtt_STATUS_Read(); / /发布：已经收到对方情绪
+    sendmqtt_STATUS_Read(); //发布：已经收到对方情绪
     ReadOrNot = true; // 将阅读状态改为已读
     // 再根据 pairStatus for normal, 1 for happy, 2 for sad, 3 for angry，显示对应的颜色
   }

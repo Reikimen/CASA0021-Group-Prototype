@@ -134,7 +134,7 @@ void loop() {
 
         if (button1Pressed) {
           button1Pressed = false;
-          lightUpPixels(0, 23, 255, 255, 0);  
+          //lightUpPixels(0, 23, 255, 255, 0);  
           Serial.println("SAD");
           sendmqtt_sad();
         } else if (button2Pressed) {

@@ -1,6 +1,6 @@
 // Keep only one cancel comment, defining the mode of the current device
-#define MODE_JACK   // The device is in Jack mode
-// #define MODE_ROSE  // The device is in Rose mode
+// #define MODE_JACK   // The device is in Jack mode
+#define MODE_ROSE  // The device is in Rose mode
 #define COUPLE_NUM "002" // The couple's number
 
 // ===== MQTT Topic definition =====

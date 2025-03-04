@@ -19,7 +19,7 @@
 int loactionCount = 50; // 50 means 5s for once GPS location update to MQTT
 int emotionDebugCount = 300;
 int motorCount = 0;
-bool foundOrNot = true;
+bool PressOrNot = false;
 bool sendOrNot = true;
 bool RightDirOrNot = true;
 
@@ -63,9 +63,9 @@ void loop() {
   // sendmqtt_normal();
   // delay(500);
 
-  if (startPressed){
+  if (startPressed){ // If the press start transbtn is detected
     startPressed = false;
-    foundOrNot = false;
+    PressOrNot = true;
     RightDirOrNot = false;
     startPressCount++;
     lightUpPixels(0, 23, 255, 255, 255);  
@@ -75,9 +75,9 @@ void loop() {
     digitalWrite(MOTOR_PIN, LOW);
   }
 
-  if (!foundOrNot){
-      // waitForNorthCalibration();  // First detect azimuth == 0 before proceeding
-      if (!RightDirOrNot){
+  if (PressOrNot){ // keep run in the main loop till the message is send
+
+      if (!RightDirOrNot){ // keep in main loop till the right dir
         double bearing = calculateBearing(storedLAT, storedLON, grabedLAT, grabedLON);
 
         compass.read();
@@ -99,7 +99,7 @@ void loop() {
         // Check if azimuth is within ±5 degrees of the target
         if (isTargetAzimuthReached(azimuth, bearing)) {
           // 如果对准了做以下动作
-          lightUpPixels(0, 23, 0, 255, 0);
+          lightUpPixels(0, 23, 0, 255, 0);  
           digitalWrite(MOTOR_PIN, HIGH);
           delay(500);
           digitalWrite(MOTOR_PIN, LOW);
@@ -120,50 +120,43 @@ void loop() {
           button1Pressed = false;
           Serial.println("SAD");
           sendmqtt_sad();
-          lightUpPixels(0, 23, 0, 0, 255);  
+          lightUpPixels(0, 23, 0, 0, 255);
           digitalWrite(MOTOR_PIN, HIGH);
           delay(300);
           digitalWrite(MOTOR_PIN, LOW);
           pixels.clear();
           pixels.show();
           sendOrNot = true;
-          foundOrNot = true;
+          PressOrNot = false;
         } else if (button2Pressed) {
           button2Pressed = false;
           //lightUpPixels(12, 16, 255, 255, 0);  
           Serial.println("HAPPY");
           sendmqtt_happy();
-          lightUpPixels(0, 23, 0, 255, 0);  
+          lightUpPixels(0, 23, 0, 255, 0);
           digitalWrite(MOTOR_PIN, HIGH);
           delay(300);
           digitalWrite(MOTOR_PIN, LOW);
           pixels.clear();
           pixels.show();
           sendOrNot = true;
-          foundOrNot = true;
+          PressOrNot = false;
         } else if (button3Pressed) {
           button3Pressed = false;
           //lightUpPixels(18, 24, 255, 255, 0);  
           Serial.println("ANGRY");
           sendmqtt_angry();
-          lightUpPixels(0, 23, 255, 0, 0);  
+          lightUpPixels(0, 23, 255, 0, 0);
           digitalWrite(MOTOR_PIN, HIGH);
           delay(300);
           digitalWrite(MOTOR_PIN, LOW);
           pixels.clear();
           pixels.show();
           sendOrNot = true;
-          foundOrNot = true;
+          PressOrNot = false;
         }
       }
     }
-    
-    // else if (startPressCount == 2){
-    //   Serial.println("Entering Deep Sleep...");
-    //   delay(500); 
-    //   enterDeepSleep(); 
-    //   startPressCount = 0;
-    // }
 
   if (!ReadOrNot){
     motorCount++;
@@ -176,8 +169,8 @@ void loop() {
     else{
       motorCount = 0;
     }
+    
   }
-  
 
   if (!ReadOrNot){ // 如果还没有阅读对面的情绪信息，需要一直旋转罗盘直到对准对面
     // Serial.println("Pls use the compase to find the dir.");
@@ -203,7 +196,6 @@ void loop() {
     // Check if azimuth is within ±5 degrees of the target
     if (isTargetAzimuthReached(azimuth, bearing)) {
       // regular viberate
-      lightUpPixels(0, 23, 100, 0, 100);
       digitalWrite(MOTOR_PIN, HIGH);
       delay(500);
       digitalWrite(MOTOR_PIN, LOW);
@@ -228,19 +220,19 @@ void loop() {
       ReadOrNot = true; // 将全局变量阅读状态改为已读
       // 再根据 pairStatus for normal, 1 for happy, 2 for sad, 3 for angry，显示对应的颜色
       Serial.println("Indicate your pair's emotion「LED」, 1 for happy, 2 for sad, 3 for angry");
-      if (pairStatus==1){
+      if (pairStatus==1){ // happy
         lightUpPixels(0, 23, 100, 0, 100);
       }
-      else if (pairStatus==2){
+      else if (pairStatus==2){ // sad
         lightUpPixels(0, 23, 100, 100, 0);
       }
-      else if (pairStatus==3){
+      else if (pairStatus==3){ // angry
         lightUpPixels(0, 23, 0, 100, 100);
       }
       else{
         // 一般没有其他情况，如有，则检查MQTT部分代码
       }
-      delay(3000);
+      delay(5000);
       pixels.clear();
       pixels.show();
     }

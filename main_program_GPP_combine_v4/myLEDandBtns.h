@@ -5,7 +5,7 @@
 #define BUTTON_START 23     // Start button 4
 #define MOTOR_PIN 16        // M20 Motor
 #define NUMPIXELS 24 
-#define LED_PIN 15
+#define LED_PIN 2
 
 // Global Variable for main program
 int loactionCount = 50; // 50 means 5s for once GPS location update to MQTT

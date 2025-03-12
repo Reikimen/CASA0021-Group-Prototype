@@ -126,7 +126,8 @@ void loop() {
           //lightUpPixels(12, 16, 255, 255, 0);  
           Serial.println("HAPPY");
           sendmqtt_happy();
-          lightUpRainbow(); 
+          // lightUpRainbow(); 
+          lightUpPixels(0, 23, 255, 255, 0);  
           // digitalWrite(MOTOR_PIN, HIGH);
           delay(300);
           // digitalWrite(MOTOR_PIN, LOW);
@@ -197,8 +198,31 @@ void loop() {
 
     // Check if azimuth is within ±5 degrees of the target
     if (isTargetAzimuthReached(azimuth, bearing)) {
+      // 再根据 pairStatus for normal, 1 for happy, 2 for sad, 3 for angry，显示对应的颜色
+      Serial.println("Indicate your pair's emotion「LED」, 1 for happy, 2 for sad, 3 for angry");
+      if (pairStatus==1){
+        // lightUpRainbow();
+        lightUpPixels(0, 23, 255, 255, 0);  
+      }
+      else if (pairStatus==2){
+        lightUpPixels(0, 23, 0, 0, 255);
+      }
+      else if (pairStatus==3){
+        lightUpPixels(0, 23, 255, 0, 0);
+      }
+      else{
+        // 一般没有其他情况，如有，则检查MQTT部分代码
+      }
       // regular viberate
-      lightUpPixels(0, 23, 100, 0, 100);
+      // lightUpPixels(0, 23, 100, 0, 100);
+      digitalWrite(MOTOR_PIN, HIGH);
+      delay(500);
+      digitalWrite(MOTOR_PIN, LOW);
+      delay(500);
+      digitalWrite(MOTOR_PIN, HIGH);
+      delay(500);
+      digitalWrite(MOTOR_PIN, LOW);
+      delay(500);
       digitalWrite(MOTOR_PIN, HIGH);
       delay(500);
       digitalWrite(MOTOR_PIN, LOW);
@@ -218,21 +242,7 @@ void loop() {
       // 如果对准了做以下动作
       sendmqtt_STATUS_Read(); //发布：已经收到对方情绪
       ReadOrNot = true; // 将全局变量阅读状态改为已读
-      // 再根据 pairStatus for normal, 1 for happy, 2 for sad, 3 for angry，显示对应的颜色
-      Serial.println("Indicate your pair's emotion「LED」, 1 for happy, 2 for sad, 3 for angry");
-      if (pairStatus==1){
-        lightUpRainbow();
-      }
-      else if (pairStatus==2){
-        lightUpPixels(0, 23, 0, 0, 255);
-      }
-      else if (pairStatus==3){
-        lightUpPixels(0, 23, 255, 0, 0);
-      }
-      else{
-        // 一般没有其他情况，如有，则检查MQTT部分代码
-      }
-      delay(3000);
+
       pixels.clear();
       pixels.show();
     }

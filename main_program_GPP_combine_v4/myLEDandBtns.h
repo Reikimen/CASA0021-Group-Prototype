@@ -1,7 +1,7 @@
 //#define LED_PIN 15          // WS2812B 
-#define BUTTON_PIN1 4       // button1
-#define BUTTON_PIN2 18      // button2
-#define BUTTON_PIN3 19      // button3
+#define BUTTON_PIN1 4       // button1.sad
+#define BUTTON_PIN2 18      // button2.happy
+#define BUTTON_PIN3 19      // button3.angry
 #define BUTTON_START 23     // Start button 4
 #define MOTOR_PIN 16        // M20 Motor
 #define NUMPIXELS 24 

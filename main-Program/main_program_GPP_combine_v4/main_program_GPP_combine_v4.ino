@@ -254,3 +254,25 @@ void loop() {
 
   delay(100);  // Loop every 0.1 seconds
 }
+
+void sendmqtt_location() {
+  char LAT_message[50];
+  sprintf(LAT_message, "%.5f", storedLAT);
+  
+  // 发布消息到MQTT主题
+  if (client.publish(mqtt_topic_A_LAT, LAT_message)) {
+    Serial.println("Message upload successfully!「MQTT-LAT」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-LAT」");
+  }
+  
+  char LON_message[50];
+  sprintf(LON_message, "%.5f", storedLON);
+  
+  // 发布消息到MQTT主题
+  if (client.publish(mqtt_topic_A_LON, LON_message)) {
+    Serial.println("Message upload successfully!「MQTT-LON」");
+  } else {
+    Serial.println("Failed to update info.「MQTT-LON」");
+  }
+}

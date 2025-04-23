@@ -1,49 +1,96 @@
-# Aligned
-Proposed by [<u>Tina Samie</u>](https://github.com/tantoon94), [<u>Dankao Chen</u>](https://github.com/Reikimen), [<u>Jiaying Shen</u>](https://github.com/JY-SHENNNN), [<u>YouTian Peng</u>](https://github.com/rorschachwilpeng)
+# CASA0021: Group Prototype and Pitch 24/25
+<div style="text-align: center;">
+  <img src="Img/team.png" alt="Flowchart">
+</div>
 
-## What is Aligned?
 
-It’s a pair of handheld devices designed to help people stay emotionally close, even when physically apart. Rooted in the quiet power of alignment—both in direction and in feeling—Aligned offers a new way to share presence across distance.
+## 📌 Introduction
 
-Instead of words or screens, it uses orientation and light.
-You gently rotate your device toward a presence that matters.
+**Aligned** is a paired emotional communication device for people in long-distance relationships—whether romantic partners, family, or close friends. Instead of relying on texts or video calls, users connect by physically aligning their devices and sending emotions through light and vibration.
 
-Once aligned, a single press shares a feeling—subtle, intentional, and beyond language.
+When one user rotates their device to face the direction of their partner and presses a button, a message is sent—but it will only be received when the other user also aligns in return. This two-way interaction adds a sense of presence and emotional balance that typical communication tools often lack.
 
 **Aligned isn’t just a compass—it’s your emotional North Star.**
 
+## 🌍 Why Aligned?
+
+Staying connected across distances can be emotionally draining. Traditional tools like messaging and video calls are often screen-heavy, verbal, and fatiguing.
+
+**Aligned** takes a different approach. It brings back the power of non-verbal connection—through direction, movement, and shared moments. Inspired by studies on the importance of physical cues in emotional bonding, Aligned helps users feel close, quietly and intentionally.
+
+
 ---- 
 
-👉[Discover **Aligned** in this short video](https://www.youtube.com/watch?v=aNNHWGniDm8)
+## 🎬 Demo Video
+
+See how **Aligned** works in action:  
+[▶️ Watch the short demo on YouTube](https://www.youtube.com/watch?v=aNNHWGniDm8)
 
 
-***
-### Function Design
-<div style="text-align: center;">
-  <img src="https://raw.githubusercontent.com/Reikimen/CASA0021-Group-Prototype/refs/heads/main/Img/flowchart.png" alt="Flowchart">
-</div>
+---
 
-**Sender side:**
 
-After pressing the start button, the device turns on. If it is the first time using the device, connect WiFi through your phone. Then, the magnetic sensor will start to calibrate. If it has already been calibrated before, the device will start to find the direction of the paired receiver. Once the device is correctly aligned, the user can choose an emotion using the buttons.
+## 🧭 How to Use Aligned
 
-**Receiver side:**
+<table>
+  <tr>
+    <td align="center">
+      <img src="Img/how_to_use.png" alt="Flowchart 1" width="400"/>
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/Reikimen/CASA0021-Group-Prototype/refs/heads/main/Img/flowchart.png" alt="Flowchart 2" width="400"/>
+    </td>
+  </tr>
+</table>
 
-If this is the first time using the device, connect WiFi through your phone. Then, the magnetic sensor will start to calibrate. If calibration is already done before, the device will wait for a message from the sender. After receiving the message, the device enters "seek mode" with LED guidance:
 
-- :green_circle: Green light means the device is pointing in the correct direction.
-- :red_circle:Red light means the direction is wrong.
+### Step 1: Power on the device  
+Press the big red start button. On first use, you’ll be prompted to connect to Wi-Fi using your phone. The device will automatically calibrate the built-in compass.
 
-When all the LEDs turn green, the correct direction is found.
-Then, the LEDs will show the emotional message sent by the sender.
+---
 
-Light instruction:
-- yellow: happy :smile:
-- blue: sad  :cry:
-- red: angry    	:angry:
-   
+### 💌 If you are the **Sender**:
 
-***
+1. **Rotate to find direction**  
+   The device will help you locate the correct direction of your paired partner.  
+   Once you are aligned, the LEDs will signal success.
+
+2. **Choose how you feel**  
+   Use the emotion buttons to send a feeling:
+   - 🟡 Yellow → Happy  
+   - 🔵 Blue → Sad  
+   - 🔴 Red → Angry  
+
+3. That’s it — your emotion is sent.  
+   The other person can now receive it, but **only when they align with your direction**.
+
+---
+
+### 📡 If you are the **Receiver**:
+
+1. **Wait for a message**  
+   When your partner sends a signal, your device enters **Seek Mode**. The LED ring starts showing **navigation indicators** to help you rotate and align:
+
+   - 🟢 **Green navigation lights** → You’re pointing in the correct direction  
+   - 🔴 **Red navigation lights** → You’re off-target; try rotating slowly
+
+2. Once aligned, the navigation lights will disappear, and the ring will glow in an **emotion color**—Yellow, Blue, or Red—depending on the feeling your partner sent.
+
+
+---
+
+### 🛠️ Color Guide (LED Ring)
+
+| Emotion | Color |
+|---------|--------|
+| 😊 Happy | 🟡 Yellow |
+| 😢 Sad   | 🔵 Blue   |
+| 😠 Angry | 🔴 Red    |
+
+--- 
+## Technical Archetecture
+### Software Design
+
 ### Hardware Design
 <div style="text-align: center;">
   <img src="https://raw.githubusercontent.com/Reikimen/CASA0021-Group-Prototype/refs/heads/main/Img/GPP_bb.jpg" alt="Flowchart">
@@ -82,8 +129,13 @@ Light instruction:
 
 
 ----
-**Reference:**
+
+### Enclosure Design
+
+
+## Reference:
 
 1. [https://github.com/troelssiggaard/ESP32-fritzing-module](https://forum.fritzing.org/t/esp-wroom-32d-firebeetle/13869/5)
 
 2. https://github.com/adafruit/Fritzing-Library/blob/master/parts/retired/Neopixel%2024%20Ring.fzpz
+

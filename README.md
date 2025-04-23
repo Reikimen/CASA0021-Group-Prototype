@@ -1,6 +1,6 @@
 # CASA0021: Group Prototype and Pitch 24/25
 <div style="text-align: center;">
-  <img src="Img/team.png" alt="Flowchart">
+  <img src="Img/team.png" alt="Flowchart" width="2000">
 </div>
 
 

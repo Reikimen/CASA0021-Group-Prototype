@@ -72,7 +72,7 @@ Press the big red start button. On first use, you’ll be prompted to connect to
    When your partner sends a signal, your device enters **Seek Mode**. The LED ring starts showing **navigation indicators** to help you rotate and align:
 
    - 🟢 **Green navigation lights** → You’re pointing in the correct direction  
-   - 🔴 **Red navigation lights** → You’re off-target; try rotating slowly
+   - 🔴 **Red navigation lights** → You're off-target. Try turning in the opposite direction
 
 2. Once aligned, the navigation lights will disappear, and the ring will glow in an **emotion color**—Yellow, Blue, or Red—depending on the feeling your partner sent.
 

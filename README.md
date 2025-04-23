@@ -45,7 +45,7 @@ See how **Aligned** works in action:
 
 
 ### Step 1: Power on the device  
-Press the big red start button. On first use, you’ll be prompted to connect to Wi-Fi using your phone. The device will automatically calibrate the built-in compass.
+Press the big start button. On first use, you’ll be prompted to connect to Wi-Fi using your phone. The device will automatically calibrate the built-in compass.
 
 ---
 

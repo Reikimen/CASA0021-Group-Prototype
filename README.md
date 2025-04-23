@@ -88,7 +88,7 @@ Press the big red start button. On first use, you’ll be prompted to connect to
 | 😠 Angry | 🔴 Red    |
 
 --- 
-## Technical Archetecture
+## Technical Architecture
 ### Software Design
 
 ### Hardware Design

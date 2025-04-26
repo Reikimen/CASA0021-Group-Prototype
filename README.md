@@ -58,6 +58,7 @@ On first use, you’ll be prompted to connect to your own Wi-Fi using your phone
 <p align="center">
   <img src="Img/Readme/ESP32-Connector-APP.png" alt="Flowchart" width="600">
 </p>
+
 ### Step 3: Enjoy Our "Alinged"
 
 

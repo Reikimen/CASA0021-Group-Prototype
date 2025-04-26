@@ -196,7 +196,7 @@ By defining MODE\_JACK/MODE\_ROSE and COUPLE\_NUM macros in the header file, the
 
 ----
 
-### Enclosure Design
+### Reproducing the Enclosure & 3DPrint 
 
 Aligned with the project's theme, the device was aimed to be carried by the user as a small, handheld device. In this regard, one of the main aspects of this project was the enclosure's design. The design of the enclosure follows three primary principles:
 
@@ -208,7 +208,10 @@ Aligned with the project's theme, the device was aimed to be carried by the user
   <img src="Img/Readme/Design Iterations.png" alt="Flowchart" width="1000">
 </p>
 
-In the final iteration, a masking ring plate in the shape of arrows was placed on the LED ring to serve as a light diffuser, demonstrating the directional angle. Furthermore, the buttons were shaped into smiley emoji faces to communicate each of the feelings more effectively. Last but not least, the size of the enclosure was adjusted to accommodate all the components and allow space for the circuit, the MCU, and the battery.
+## How to Dowload the files
+
+You can find different versions of the model in the 3D model folder. Most of the modeling was done in Rhino 8, therefore the best platform to open this file is using Rhino, however the files could be imported to anyother modleing software that compatible with the file format. The G-code for the 3d printing is also available with the settings included in the name. 
+There is also another file for lasercutting the top LED ring diffuser from a 3mm black acrylic sheet and the buttons with respective colours for each emotion. 
 
 <p align="center">
   <img src="Img/Readme/Rhino8.png" alt="Flowchart" width="1000">

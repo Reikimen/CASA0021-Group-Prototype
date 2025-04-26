@@ -33,7 +33,6 @@ See how **Aligned** works in action:
 
 ---
 
-
 ## 🧭 How to Use Aligned
 
 <table>
@@ -56,15 +55,13 @@ Press the big start button. The device will automatically calibrate the built-in
 
 On first use, you’ll be prompted to connect to your own Wi-Fi using your phone. 
 
-<div style="text-align: center;">
+<p align="center">
   <img src="Img/Readme/ESP32-Connector-APP.png" alt="Flowchart" width="600">
-</div>
-
+</p>
 ### Step 3: Enjoy Our "Alinged"
 
----
 
-### 💌 If you are the **Sender**:
+#### 💌 If you are the **Sender**:
 
 1. **Rotate to find direction**  
    The device will help you locate the correct direction of your paired partner.  
@@ -81,7 +78,7 @@ On first use, you’ll be prompted to connect to your own Wi-Fi using your phone
 
 ---
 
-### 📡 If you are the **Receiver**:
+#### 📡 If you are the **Receiver**:
 
 1. **Wait for a message**  
    When your partner sends a signal, your device enters **Seek Mode**. The LED ring starts showing **navigation indicators** to help you rotate and align:
@@ -93,7 +90,7 @@ On first use, you’ll be prompted to connect to your own Wi-Fi using your phone
 
 ---
 
-### 🛠️ Color Guide (LED Ring)
+#### 🛠️ Color Guide (LED Ring)
 
 | Emotion | Color |
 |---------|--------|
@@ -147,24 +144,26 @@ The application establishes a connection using the service **UUID 0000ff01-0000-
 
 During the runtime phase, the device has multiple operating states: in normal mode, the device is idle and listens for messages; in seek mode, the user must align the device in the right direction to receive a message; in emotion send mode, the user rotates the device to find the direction of the partner and sends the emotion; and in message read mode, the device provides feedback when the direction is aligned.
 
-<div style="text-align: center;">
+<p align="center">
   <img src="Img/Readme/MQTT-Interaction-Flow.png" alt="Flowchart" width="600">
-</div>
+</p>
 
 The Arduino firmware for this project adopts an innovative dual-equal role architecture design, where the device roles can be interchanged at any time; the sender and receiver are not fixed identities but are switched dynamically according to the current interaction needs. The firmware also achieves flexible configuration of multiple pairs of users and dual devices through a single code base, greatly reducing the maintenance cost and deployment complexity of the firmware. 
 
-<div style="text-align: center;">
+<p align="center">
   <img src="Img/Readme/DUAL.png" alt="Flowchart" width="600">
-</div>
+</p>
+
 By defining MODE\_JACK/MODE\_ROSE and COUPLE\_NUM macros in the header file, the system is able to automatically configure the corresponding device name and MQTT topic subscription publishing relationship without writing duplicate code. 
 
 
 
 
 ### Hardware Design
-<div style="text-align: center;">
-  <img src="Img/Readme/GPP_bb.jpg" alt="Flowchart"  width="600">
-</div>
+<p align="center">
+  <img src="Img/Readme/GPP_bb.jpg" alt="Flowchart" width="600">
+</p>
+
 
 
 
@@ -198,9 +197,23 @@ By defining MODE\_JACK/MODE\_ROSE and COUPLE\_NUM macros in the header file, the
 
 ### Enclosure Design
 
+Aligned with the project's theme, the device was aimed to be carried by the user as a small, handheld device. In this regard, one of the main aspects of this project was the enclosure's design. The design of the enclosure follows three primary principles:
 
+1. **Compact and Portable:** Designed to be small and pocket-sized for comfortable handheld use, the device's wireless capabilities ensure convenience and ease of transport.
+2. **User-Friendly:** Intuitive operation is paramount, with straightforward usage and clear, easily interpretable signs and colors.
+3. **Aesthetic Appeal:** A visually pleasing design that is sleek and customizable to suit individual preferences.
 
+<p align="center">
+  <img src="Img/Readme/Design Iterations.png" alt="Flowchart" width="1000">
+</p>
 
+In the final iteration, a masking ring plate in the shape of arrows was placed on the LED ring to serve as a light diffuser, demonstrating the directional angle. Furthermore, the buttons were shaped into smiley emoji faces to communicate each of the feelings more effectively. Last but not least, the size of the enclosure was adjusted to accommodate all the components and allow space for the circuit, the MCU, and the battery.
+
+<p align="center">
+  <img src="Img/Readme/Rhino8.png" alt="Flowchart" width="1000">
+</p>
+
+The device's compact size presented numerous challenges for designing the enclosure. Some of the challenges overcome in the prototyping process were efficiently arranging all components, including the battery with its charger module, in a small space and ensuring that all components were accessible. 
 
 
 ## Reference:

@@ -210,14 +210,23 @@ Aligned with the project's theme, the device was aimed to be carried by the user
 
 ## How to Dowload the files
 
+### 3D model
+
 You can find different versions of the model in the 3D model folder. Most of the modeling was done in Rhino 8, therefore the best platform to open this file is using Rhino, however the files could be imported to anyother modleing software that compatible with the file format. The G-code for the 3d printing is also available with the settings included in the name. 
 There is also another file for lasercutting the top LED ring diffuser from a 3mm black acrylic sheet and the buttons with respective colours for each emotion. 
 
 <p align="center">
   <img src="Img/Readme/Rhino8.png" alt="Flowchart" width="1000">
 </p>
-
 The device's compact size presented numerous challenges for designing the enclosure. Some of the challenges overcome in the prototyping process were efficiently arranging all components, including the battery with its charger module, in a small space and ensuring that all components were accessible. 
+
+### Arduino
+
+The root is ```/main-Program/main_program_GPP_combine_v4```
+
+### Flutter
+
+The root is ```/flutter_app```
 
 
 ## Reference:
